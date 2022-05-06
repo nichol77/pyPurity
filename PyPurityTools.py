@@ -1,6 +1,6 @@
 from struct import unpack, calcsize
 import numpy as np
-from scipy.signal import butter,filtfilt
+from scipy.signal import butter,filtfilt,lfilter,lfilter_zi
 
 
 
@@ -78,4 +78,21 @@ class PyPurityTools:
         b, a = butter(order, normal_cutoff, btype='low', analog=False)
         y = filtfilt(b, a, data)
         return y
+    
+     #Wrapper for a lowpass butterworth filter
+    #Not very efficient at the moment
+    def butter_lowpass_lfilter(data, cutoff, fs, order):
+        # Filter requirements.
+        #T = 5.0         # Sample Period
+        #fs = 30.0       # sample rate, Hz
+        #cutoff = 2      # desired cutoff frequency of the filter, Hz ,      slightly higher than actual 1.2 Hz
+        nyq = 0.5 * fs  # Nyquist Frequency
+        #order = 2       # sin wave can be approx represented as quadratic
+        #n = int(T * fs) # total number of samples
+        normal_cutoff = cutoff / nyq
+        # Get the filter coefficients 
+        b, a = butter(order, normal_cutoff, btype='low', analog=False)
+        zi = lfilter_zi(b, a)
+        z, _ = lfilter(b, a, data, zi=zi*data[0])
+        return z
     
